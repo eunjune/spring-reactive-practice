@@ -5,12 +5,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Iterator;
 import java.util.Observable;
+import java.util.Observer;
 
 @SpringBootApplication
 public class SpringReactivePracticeApplication {
 
     public static void main(String[] args) {
 
+        // Iterable 방식
         Iterable<Integer> iter = () -> new Iterator<>() {
             int i = 0;
             final static int MAX = 10;
@@ -31,10 +33,38 @@ public class SpringReactivePracticeApplication {
         }
 
         for (Iterator<Integer> it = iter.iterator(); it.hasNext();) {
-            System.out.println(it.next());
+            System.out.println(it.next()); // 데이터 받는 쪽
         }
 
+
+        // Observable 방식
+        Observer ob = new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                // 데이터 받는 쪽
+                System.out.println(arg);
+            }
+        };
+
+        IntObservable io = new IntObservable();
+        io.addObserver(ob);
+
+        io.run();
+
         SpringApplication.run(SpringReactivePracticeApplication.class, args);
+    }
+
+    // 데이터 쏘는 쪽
+    static class IntObservable extends Observable implements Runnable {
+
+        @Override
+        public void run() {
+            for (int i = 1; i <= 10; i++) {
+                setChanged();
+                notifyObservers(i); // push. 넘어갈 데이터를 준다.
+                // int i = it.next()   pull.
+            }
+        }
     }
 
 }
