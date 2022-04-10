@@ -1,68 +1,34 @@
 package com.example.springreactivepractice;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Flow;
-import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.Flow;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Slf4j
 public class PubSub {
     public static void run() throws InterruptedException {
 
-        Iterable<Integer> itr = Arrays.asList(1,2,3,4,5);
-        ExecutorService es = Executors.newSingleThreadExecutor();
+        Flow.Publisher p = iterPub(Stream.iterate(1, a->a+1).limit(10).collect(Collectors.toList()));
 
-        Flow.Publisher p = new Flow.Publisher() {
-            @Override
-            public void subscribe(Flow.Subscriber subscriber) {
-                Iterator<Integer> it = itr.iterator();
-                // 1.
-                subscriber.onSubscribe(new Flow.Subscription() {
-                    @Override
-                    public void request(long n) {
+        // 시작
+        p.subscribe(logSub());
 
-                        es.execute(() -> {
-                            int i = 0;
-                            try {
-                                while(i++ < n) {
-                                    if(it.hasNext()) {
-                                        // 2.
-                                        subscriber.onNext(it.next());
-                                    } else {
-                                        // 3.
-                                        subscriber.onComplete();
-                                        break;
-                                    }
-                                }
-                            } catch (RuntimeException e) {
-                                // 3.
-                                subscriber.onError(e);
-                            }
-                        });
-                    }
+    }
 
-                    @Override
-                    public void cancel() {
-
-                    }
-                });
-            }
-        };
-
-        Flow.Subscriber<Integer> s = new Flow.Subscriber<Integer>() {
+    private static Flow.Subscriber<Integer> logSub() {
+        return new Flow.Subscriber<Integer>() {
 
             Flow.Subscription subscription;
 
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                this.subscription.request(1L);
+                this.subscription.request(Long.MAX_VALUE);
             }
 
             @Override
             public void onNext(Integer item) {
-                this.subscription.request(1);
             }
 
             @Override
@@ -75,10 +41,33 @@ public class PubSub {
 
             }
         };
+    }
 
-        // 시작
-        p.subscribe(s);
+    private static Flow.Publisher iterPub(Iterable<Integer> iter) {
+        Iterable<Integer> itr = iter;
 
-        es.awaitTermination(10, TimeUnit.HOURS);
+
+        return new Flow.Publisher() {
+            @Override
+            public void subscribe(Flow.Subscriber subscriber) {
+                subscriber.onSubscribe(new Flow.Subscription() {
+                    @Override
+                    public void request(long n) {
+                        try {
+                            itr.forEach(subscriber::onNext);
+                            subscriber.onComplete();
+                        } catch (Throwable t) {
+                            subscriber.onError(t);
+                        }
+
+                    }
+
+                    @Override
+                    public void cancel() {
+
+                    }
+                });
+            }
+        };
     }
 }
