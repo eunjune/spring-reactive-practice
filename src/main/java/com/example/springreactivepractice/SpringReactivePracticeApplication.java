@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SpringBootApplication
 public class SpringReactivePracticeApplication {
@@ -49,7 +51,10 @@ public class SpringReactivePracticeApplication {
         IntObservable io = new IntObservable();
         io.addObserver(ob);
 
-        io.run();
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        es.execute(io);
+
+        es.shutdown();
 
         SpringApplication.run(SpringReactivePracticeApplication.class, args);
     }
