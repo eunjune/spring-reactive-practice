@@ -1,5 +1,6 @@
 # spring-reactive-practice
 
 ## 초기 reactive stream
-![reactive](https://user-images.githubusercontent.com/36889612/162755129-4ab2a2d2-d561-428d-8f85-ffc68a9ee9a9.png)
+![reactive](https://user-images.githubusercontent.com/36889612/162755378-1b28ee09-3f41-4af7-a696-92923184281b.png)
+
 
