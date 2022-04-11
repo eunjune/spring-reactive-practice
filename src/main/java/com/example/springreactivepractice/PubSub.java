@@ -10,6 +10,22 @@ import java.util.stream.Stream;
 /*
 *
 * pub -> data1 -> mapPub -> Data2 -> logSub
+map2Pub.subscribe(logSub)
+    mapPub.subscribe(DelegateSub(logSub))
+        pub.subscribe(DelegateSub(DelegateSub(logSub)))
+            DelegateSub(DelegateSub(logSub)).onSubscribe()
+                DelegateSub(logSub).onSubscribe()
+                    logSub.onSubscribe()
+                        subscription.request()
+                            DelegateSub(DelegateSub(logSub)).onNext(item)
+                                DelegateSub(logSub).onNext((s->s*10).apply(item))
+                                    logSub.onNext((s->-s).apply(item))
+                            DelegateSub(DelegateSub(logSub)).onComplete()
+                                DelegateSub(logSub).onComplete()
+                                    logSub.onComplete()
+                            DelegateSub(DelegateSub(logSub)).onError()
+                                DelegateSub(logSub).onError()
+                                    logSub.onError()
 * */
 @Slf4j
 public class PubSub {
