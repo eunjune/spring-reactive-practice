@@ -41,16 +41,16 @@ public class PubSub {
 
     public static void runSumPub() {
         Flow.Publisher<Integer> pub = iterPub(Stream.iterate(1, a->a+1).limit(10).collect(Collectors.toList()));
-//        Flow.Publisher<Integer> reducePub = reducePub(pub,0,(BiFunction<Integer,Integer,Integer>)(a, b) -> a+b);
-//        reducePub.subscribe(logSub());
+        Flow.Publisher<String> reducePub = reducePub(pub,"",(a,b) -> a+b);
+        reducePub.subscribe(logSub());
     }
 
-/*    private static Flow.Publisher<Integer> reducePub(Flow.Publisher<Integer> pub, int init, BiFunction<Integer,Integer,Integer> bf) {
-        return new Flow.Publisher<Integer>() {
+    private static <T,R> Flow.Publisher<R> reducePub(Flow.Publisher<T> pub, R init, BiFunction<R,T,R> bf) {
+        return new Flow.Publisher<R>() {
             @Override
-            public void subscribe(Flow.Subscriber<? super Integer> subscriber) {
-                pub.subscribe(new DelegateSub(subscriber) {
-                    int result = init;
+            public void subscribe(Flow.Subscriber<? super R> subscriber) {
+                pub.subscribe(new DelegateSub<T,R>(subscriber) {
+                    R result = init;
 
                     @Override
                     public void onNext(T item) {
@@ -65,7 +65,7 @@ public class PubSub {
                 });
             }
         };
-    }*/
+    }
 
     private static <T,R>  Flow.Publisher<R> mapPub(Flow.Publisher<T> pub, Function<T, R> integerFunction) {
         return new Flow.Publisher<R>() {
