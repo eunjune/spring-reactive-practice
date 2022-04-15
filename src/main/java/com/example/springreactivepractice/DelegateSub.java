@@ -3,11 +3,11 @@ package com.example.springreactivepractice;
 
 import java.util.concurrent.Flow;
 
-public class DelegateSub implements Flow.Subscriber<Integer> {
+public class DelegateSub<T,R> implements Flow.Subscriber<T> {
 
     Flow.Subscriber sub;
 
-    public DelegateSub(Flow.Subscriber subscriber) {
+    public DelegateSub(Flow.Subscriber<? super R> subscriber) {
         this.sub = subscriber;
     }
 
@@ -17,7 +17,7 @@ public class DelegateSub implements Flow.Subscriber<Integer> {
     }
 
     @Override
-    public void onNext(Integer item) {
+    public void onNext(T item) {
         sub.onNext(item);
     }
 
