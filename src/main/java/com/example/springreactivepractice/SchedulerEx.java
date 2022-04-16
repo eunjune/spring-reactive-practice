@@ -2,6 +2,7 @@ package com.example.springreactivepractice;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.relational.core.sql.In;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -150,16 +151,15 @@ public class SchedulerEx {
 
     // onSubscribe + onPublish
     /*
-    * [pool-2-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onSubscribe
-    * [pool-2-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - request
-    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:1
-    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:2
-    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:3
-    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:4
-    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:5
-    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onComplete
+    * [subOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - onSubscribe
+    * [subOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - request
+    * [pubOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:1
+    * [pubOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:2
+    * [pubOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:3
+    * [pubOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:4
+    * [pubOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:5
+    * [pubOn-1] DEBUG com.example.springreactivepractice.SchedulerEx - onComplete
     * */
-
     public static void main(String[] args) {
         Flow.Publisher<Integer> pub = subscriber -> {
             subscriber.onSubscribe(new Flow.Subscription() {
@@ -182,13 +182,23 @@ public class SchedulerEx {
         };
 
         Flow.Publisher<Integer> subOnPub = sub -> {
-            ExecutorService es = Executors.newSingleThreadExecutor();
+            ExecutorService es = Executors.newSingleThreadExecutor(new CustomizableThreadFactory(){
+                @Override
+                public String getThreadNamePrefix() {
+                    return "subOn-";
+                }
+            });
             es.execute(() -> pub.subscribe(sub));
         };
 
         Flow.Publisher<Integer> pubOnPub = sub -> {
             subOnPub.subscribe(new Flow.Subscriber<Integer>() {
-                ExecutorService es = Executors.newSingleThreadExecutor();
+                ExecutorService es = Executors.newSingleThreadExecutor(new CustomizableThreadFactory(){
+                    @Override
+                    public String getThreadNamePrefix() {
+                        return "pubOn-";
+                    }
+                });
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
