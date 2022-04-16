@@ -2,12 +2,15 @@ package com.example.springreactivepractice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Flow;
 
 @SpringBootApplication
 public class SpringReactivePracticeApplication {
@@ -69,6 +72,30 @@ public class SpringReactivePracticeApplication {
                 notifyObservers(i); // push. 넘어갈 데이터를 준다.
                 // int i = it.next()   pull.
             }
+        }
+    }
+
+    @RestController
+    public static class Controller {
+        @RequestMapping("/hello")
+        public Flow.Publisher<String> hello(String name) {
+            return new Flow.Publisher<String>() {
+                @Override
+                public void subscribe(Flow.Subscriber<? super String> subscriber) {
+                    subscriber.onSubscribe(new Flow.Subscription() {
+                        @Override
+                        public void request(long n) {
+                            subscriber.onNext("Hello" + name);
+                            subscriber.onComplete();
+                        }
+
+                        @Override
+                        public void cancel() {
+
+                        }
+                    });
+                }
+            };
         }
     }
 
