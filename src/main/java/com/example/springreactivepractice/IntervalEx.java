@@ -16,23 +16,60 @@ public class IntervalEx {
         Flow.Publisher<Integer> pub = sub -> {
             sub.onSubscribe(new Flow.Subscription() {
                 int no = 0;
+                boolean cancelled = false;
 
                 @Override
                 public void request(long n) {
                     ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
                     exec.scheduleAtFixedRate(() -> {
+                        if(cancelled) {
+                            exec.shutdown();
+                            return;
+                        }
+
                         sub.onNext(no++);
                     },0,300, TimeUnit.MILLISECONDS);
                 }
 
                 @Override
                 public void cancel() {
-
+                    cancelled = true;
                 }
             });
         };
 
-        pub.subscribe(new Flow.Subscriber<Integer>() {
+        Flow.Publisher<Integer> takePub = sub -> {
+            pub.subscribe(new Flow.Subscriber<Integer>() {
+                int count=0;
+                Flow.Subscription subsc;
+
+                @Override
+                public void onSubscribe(Flow.Subscription subscription) {
+                    subsc = subscription;
+                    sub.onSubscribe(subscription);
+                }
+
+                @Override
+                public void onNext(Integer item) {
+                    sub.onNext(item);
+                    if(++count > 4) {
+                        subsc.cancel();
+                    }
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    sub.onError(throwable);
+                }
+
+                @Override
+                public void onComplete() {
+                    sub.onComplete();
+                }
+            });
+        };
+
+        takePub.subscribe(new Flow.Subscriber<Integer>() {
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
                 log.debug("onSubscribe");
