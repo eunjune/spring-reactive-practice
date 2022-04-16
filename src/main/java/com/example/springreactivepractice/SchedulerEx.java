@@ -92,13 +92,13 @@ public class SchedulerEx {
         Flow.Publisher<Integer> pubOnPub = sub -> {
             pub.subscribe(new Flow.Subscriber<Integer>() {
                 /*
-                * 20:19:30.669 [main] DEBUG com.example.springreactivepractice.SchedulerEx - onSubscribe
-                * 20:19:30.672 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:1
-                * 20:19:30.673 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:2
-                * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:3
-                * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:4
-                * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:5
-                * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onComplete
+                * [main] DEBUG com.example.springreactivepractice.SchedulerEx - onSubscribe
+                * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:1
+                * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:2
+                * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:3
+                * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:4
+                * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:5
+                * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onComplete
                 * */
                 ExecutorService es = Executors.newSingleThreadExecutor();
 
@@ -149,6 +149,17 @@ public class SchedulerEx {
     }
 
     // onSubscribe + onPublish
+    /*
+    * [pool-2-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onSubscribe
+    * [pool-2-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - request
+    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:1
+    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:2
+    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:3
+    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:4
+    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:5
+    * [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onComplete
+    * */
+
     public static void main(String[] args) {
         Flow.Publisher<Integer> pub = subscriber -> {
             subscriber.onSubscribe(new Flow.Subscription() {
@@ -171,30 +182,12 @@ public class SchedulerEx {
         };
 
         Flow.Publisher<Integer> subOnPub = sub -> {
-            /*
-             *[pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onSubscribe
-             *[pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:1
-             *[pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:2
-             *[pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:3
-             *[pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:4
-             *[pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:5
-             *[pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onComplete
-             * */
             ExecutorService es = Executors.newSingleThreadExecutor();
             es.execute(() -> pub.subscribe(sub));
         };
 
         Flow.Publisher<Integer> pubOnPub = sub -> {
             subOnPub.subscribe(new Flow.Subscriber<Integer>() {
-                /*
-                 * 20:19:30.669 [main] DEBUG com.example.springreactivepractice.SchedulerEx - onSubscribe
-                 * 20:19:30.672 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:1
-                 * 20:19:30.673 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:2
-                 * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:3
-                 * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:4
-                 * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onNext:5
-                 * 20:19:30.674 [pool-1-thread-1] DEBUG com.example.springreactivepractice.SchedulerEx - onComplete
-                 * */
                 ExecutorService es = Executors.newSingleThreadExecutor();
 
                 @Override
