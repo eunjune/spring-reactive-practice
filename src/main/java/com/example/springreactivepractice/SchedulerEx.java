@@ -213,11 +213,13 @@ public class SchedulerEx {
                 @Override
                 public void onError(Throwable throwable) {
                     es.execute(()->sub.onError(throwable));
+                    es.shutdown();
                 }
 
                 @Override
                 public void onComplete() {
                     es.execute(()->sub.onComplete());
+                    es.shutdown();
                 }
             });
         };
