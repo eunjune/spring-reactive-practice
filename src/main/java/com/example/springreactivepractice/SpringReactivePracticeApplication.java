@@ -13,16 +13,14 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Flow;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 @SpringBootApplication
 @Slf4j
@@ -175,5 +173,26 @@ public class SpringReactivePracticeApplication {
             log.info("exit");
         };
     }
+
+
+    @RestController
+    public static class MyController {
+        @Autowired
+        MyService myService;
+
+        @GetMapping("/callable")
+        public Callable<String> callable() throws InterruptedException {
+            log.info("callable");
+
+            // 별도의 스레드로 실행된다다
+           return () -> {
+                log.info("async");
+                Thread.sleep(2000);
+                return "hello";
+            };
+        }
+    }
+
+
 
 }
