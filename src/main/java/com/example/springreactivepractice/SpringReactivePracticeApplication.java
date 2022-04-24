@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
@@ -221,6 +223,26 @@ public class SpringReactivePracticeApplication {
             }
 
             return "OK";
+        }
+
+        // 한번의 요청에 여러 응답을 보내는 기술
+        @GetMapping("/emitter")
+        public ResponseBodyEmitter emitter() throws InterruptedException{
+            ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+
+            Executors.newSingleThreadExecutor().submit(() -> {
+
+                    try {
+                        for(int i=1; i<=50; i++) {
+                            emitter.send("<p>Stream " + i + "</p>");
+                            Thread.sleep(100);
+                        }
+                    } catch (Exception e) {
+                    }
+
+            });
+
+            return emitter;
         }
     }
 
