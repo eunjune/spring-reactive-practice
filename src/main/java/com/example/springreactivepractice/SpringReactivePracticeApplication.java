@@ -16,10 +16,12 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Queue;
 import java.util.concurrent.*;
 
 @SpringBootApplication
@@ -180,16 +182,45 @@ public class SpringReactivePracticeApplication {
         @Autowired
         MyService myService;
 
+        Queue<DeferredResult<String>> results = new ConcurrentLinkedQueue<>();
+
+
         @GetMapping("/callable")
         public Callable<String> callable() throws InterruptedException {
             log.info("callable");
-
-            // 별도의 스레드로 실행된다다
+            
+            // 별도의 스레드로 실행된다
            return () -> {
                 log.info("async");
                 Thread.sleep(2000);
                 return "hello";
             };
+        }
+
+        @GetMapping("/dr")
+        public DeferredResult<String> dr() throws InterruptedException {
+
+            log.info("dr");
+
+            // setResult가 올때까지 응답은 대기된다
+           DeferredResult<String> dr = new DeferredResult<>();
+            results.add(dr);
+            return dr;
+        }
+
+        @GetMapping("/dr/count")
+        public String drcount() {
+            return String.valueOf(results.size());
+        }
+
+        @GetMapping("/dr/event")
+        public String drevent(String msg) {
+            for(DeferredResult<String> dr : results) {
+                dr.setResult("Hello " + msg);
+                results.remove(dr);
+            }
+
+            return "OK";
         }
     }
 
